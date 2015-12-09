@@ -1,0 +1,62 @@
+clc;close all;clear all;
+
+[y,Fs,bits]=wavread('D:\Documents\MATLAB\edward\ICA\ICA_code\beyond.wav');
+y=y(:,1);
+sound(y,Fs,bits);
+sigLength=length(y);
+Fs=50000;
+d=100;%连续段的重叠长度?
+L=512;
+k=L-d;
+t=fix(sigLength/k);
+frame_length=512;
+r=(rectwin(frame_length));
+for a=1:t
+	n1=(L-d)*(a-1)+1;
+    n2=(L-d)*(a-1)+frame_length;
+    s=y(n1:n2);
+    sf=fft(s'.*r',512);
+    X1(n1:n2)=sf(1:frame_length);
+end
+SIZE=8000;
+Ybeyond=zeros(SIZE,1);
+Ybeyond=20*log10(abs(X1));
+Ybe = zeros(1,300000);
+for i=1:300000
+    Ybe(i) = Ybeyond(i);
+end
+figure,plot(Ybeyond(1:4000));title('beyond频谱图');
+figure,plot(y);title('时域图');
+
+
+[y,Fs,bits]=wavread('D:\Documents\MATLAB\edward\ICA\ICA_code\wang.wav');
+y=y(:,1);
+sound(y,Fs,bits);
+sigLength=length(y);
+Fs=50000;
+d=100;%连续段的重叠长度?
+L=512;
+k=L-d;
+t=fix(sigLength/k);
+frame_length=512;
+r=(rectwin(frame_length));
+for a=1:t
+	n1=(L-d)*(a-1)+1;
+    n2=(L-d)*(a-1)+frame_length;
+    s=y(n1:n2);
+    sf=fft(s'.*r',512);
+    X1(n1:n2)=sf(1:frame_length);
+end
+SIZE=8000;
+Yliu=zeros(SIZE,1);
+Yliu=20*log10(abs(X1));
+Yl = zeros(1:300000);
+for i=1:300000
+    Y(i) = Ybeyond(i);
+end
+figure,plot(Yliu(1:4000));title('liu频谱图');
+figure,plot(y);title('时域图');
+
+x11 = 0.22017*Ybeyond + 0.45259*Yliu;
+x21 = 0.091489*Ybeyond + 0.7662*Yliu;
+plot(x11,x21);

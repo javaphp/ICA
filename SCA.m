@@ -1,0 +1,159 @@
+clc;clear all;close all;
+%% 采用fft后混合，成功分离实部
+
+n1=40;
+window=boxcar(n1);
+w1=window;
+
+[y1,Fs,bits]=wavread('shengxia.wav');
+[y2,Fs,bits]=wavread('yanhua.wav');
+[y3,Fs,bits]=wavread('niba.wav');
+[y4,Fs,bits]=wavread('wang.wav');
+y1 = y1(:,1);
+y2 = y2(:,1);
+y3 = y3(:,1);
+y4 = y4(:,1);
+% figure,
+% plot(y2);
+% figure,
+% plot(y1);
+
+[row col] = size(y1);
+length1 = row * col;
+y1 = reshape(y1,1,row*col);
+[row col] = size(y2);
+length2 = row * col;
+y2 = reshape(y2,1,row*col);
+[row col] = size(y3);
+length3 = row * col;
+y3 = reshape(y3,1,row*col);
+[row col] = size(y4);
+y4 = reshape(y4,1,row*col);
+
+y1fft = fft(y1);
+y2fft = fft(y2);
+y3fft = fft(y3);
+[row col] = size(y1fft);
+length1 = row * col;
+[row col] = size(y2fft);
+length2 = row * col;
+[row col] = size(y3fft);
+length3 = row * col;
+
+mytest1 = real(y1fft);
+figure,plot(mytest1);title('原信号s1实部');
+mytest2 = real(y2fft);
+figure,plot(mytest2);title('原信号s2实部');
+mytest3 = real(y3fft);
+figure,plot(mytest3);title('原信号s3实部');
+
+maxLength = max([length1 length2 length3]);
+x = zeros(1,maxLength);x2 = zeros(1,maxLength);x3 = zeros(1,maxLength);
+for i=1:length1
+    x(1,i) = mytest1(1,i);
+end
+for i=1:length2
+    x2(1,i) = mytest2(1,i);
+end
+for i=1:length3
+    x3(1,i) = mytest3(1,i);
+end
+% x=mytest1(1:45000);
+% x2 = mytest2(1:45000);
+% x3 = mytest3(1:45000);
+
+% x11 = 0.866*x + 0.1736*x2 - 0.1736*x3 - 0.9396*x4;
+% x21 = 0.5*x + 0.9848*x2 + 0.9848*x3 + 0.342*x4;
+x11 = cos(pi/6)*x + cos(4*pi/9)*x2 + cos(3*pi/4)*x3;
+x21 = sin(pi/6)*x + sin(4*pi/9)*x2 + sin(3*pi/4)*x3;
+
+figure,
+axis([0 20 -1 2]);
+plot(x,x11,'*');
+title('时域散点图');
+
+t=1:length(x);
+n=length(x);
+
+%[S,F,T,P]=spectrogram(x11,w1,32,256);  %S为复数，短时傅里叶变换后的结果
+%S = fft(x11);
+S = x11;
+
+t2=1:length(x2);
+n2=length(x2);
+%[S2,F,T,P]=spectrogram(x21,w1,32,256);  %S为复数，短时傅里叶变换后的结果
+%S2 = fft(x21);
+S2 = x21;
+
+
+%% 开始估计原信号
+A = zeros(2,3); %待改进
+signal = [x11;x21];
+% for i=1:maxCol
+%     myAngle = (maxIndex(1,i)*10-180)*pi/180;
+%     A(:,i) = [cos(myAngle);sin(myAngle)];
+% end
+
+A=[cos(pi/6) cos(4*pi/9) cos(3*pi/4);sin(pi/6) sin(4*pi/9) sin(3*pi/4)];
+
+[row col] = size(S);
+sLength = row * col;
+s1 = zeros(1,sLength);
+s2 = zeros(1,sLength);
+s3 = zeros(1,sLength);
+
+for i=1:sLength
+    ai1 = abs(A(1,1)/A(2,1));
+    ai2 = abs(A(1,2)/A(2,2));
+    ai3 = abs(A(1,3)/A(2,3));
+    
+    kt = abs(S(1,i)/S2(1,i));
+    
+    kt1 = abs(kt-ai1);
+    kt2 = abs(kt-ai2);
+    kt3 = abs(kt-ai3);
+    
+    if (kt1<kt2 && kt1<kt3)
+        s1(1,i) = S(1,i)/A(1,1);
+    elseif (kt2<kt1 && kt2<kt3) 
+        s2(1,i) = S(1,i)/A(1,2);
+    elseif (kt3<kt1 && kt3<kt2) 
+        s3(1,i) = S(1,i)/A(1,3);
+    end
+    
+end
+% signal1 = s1;
+% signal2 = s2;
+% signal3 = s3;
+
+% figure,plot(y1(1:51000));title('原信号s1');
+% figure,plot(y2(1:51000));title('原信号s2');
+% figure,plot(y3(1:51000));title('原信号s3');
+
+figure,plot(s1);title('估计信号s1');
+figure,plot(s2);title('估计信号s2');
+figure,plot(s3);title('估计信号s3');
+
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

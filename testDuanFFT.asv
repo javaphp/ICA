@@ -1,0 +1,75 @@
+clc;clear all;close all;
+%窗口函数%?
+n1=40;
+window=boxcar(n1);
+w1=window;
+%figure(1);
+%stem(w1);
+%?非平稳信号产生%?
+fs=1000;
+a=0:1/fs:1;
+f0=0;
+f1=150;
+y1=chirp(a,f0,1,f1);
+
+x=y1(1:510);
+%figure(2);
+%plot(x);
+%?短时傅里叶变换%??
+t=1:length(x);
+n=length(x);
+[S,F,T,P]=spectrogram(x,w1,32,256);  %S为复数，短时傅里叶变换后的结果
+%surf(T,F,10*log10(abs(P)));
+%axis tight;
+%view(0,90);
+
+[row col] = size(S);
+length = row*col;
+StoOneDimension = zeros(1, row*col);
+StoOneDimension = reshape(S,1,length);
+re = zeros(1,length);
+im = zeros(1,length);
+angle1 = zeros(1,length);
+distance = zeros(1,length);
+for i=1:1:length
+    re(1,i) = real(StoOneDimension(1,i));
+    im(1,i) = imag(StoOneDimension(1,i));
+    angle1(1,i) = angle(StoOneDimension(1,i));
+    distance(1,i) = re(1,i)^2+im(1,i)^2;
+end
+
+%列出公式，暂时不累加
+f=zeros(1,)
+for x=1:0.1:3
+    y = x*10;
+    f(1,y) = 0;
+    for i=1:length
+        temp = f(1,y);
+        a = -abs(0.5*(angle1(1,i)-x))
+        f(1,y) = distance(1,i)*exp(a);
+        f(1,y) = f(1,y) + temp;
+    end
+end
+x=0:0.1:pi
+    
+plot(x,f(1,x));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
