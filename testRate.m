@@ -2,15 +2,16 @@ clc;clear all;close all;
 %% 采用比率矩阵聚类的欠定盲源分离
 atanGate = 0; % 观测信号相除后的门限值，未定
 areaCount = 200; %观测向量相除最大值与最小值的子区间数
-areaNum = 100; %观测向量相除每个区间数量的最小阈值
+areaNum = 150; %观测向量相除每个区间数量的最小阈值
 
 n1=40;
 window=boxcar(n1);
 w1=window;
 
 [y1,Fs,bits]=wavread('shengxia.wav');
-%[y2,Fs,bits]=wavread('media/nv.wav');
-[y2,Fs,bits]=wavread('huiyin.wav');
+%[y2,Fs2,bits]=wavread('media/gao.wav');
+[y2,Fs,bits]=wavread('media/nv.wav');
+%[y3,Fs,bits]=wavread('huiyin.wav');
 [y3,Fs,bits]=wavread('niba.wav');
 originSource1 = y1;
 y1 = y1(:,1);

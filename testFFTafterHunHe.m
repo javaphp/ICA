@@ -5,10 +5,15 @@ n1=40;
 window=boxcar(n1);
 w1=window;
 
-[y1,Fs,bits]=wavread('shengxia.wav');
-%[y2,Fs,bits]=wavread('media/nv.wav');
-[y2,Fs,bits]=wavread('huiyin.wav');
+% [y1,Fs,bits]=wavread('shengxia.wav');
+% %[y2,Fs,bits]=wavread('media/nv.wav');
+% [y2,Fs,bits]=wavread('huiyin.wav');
 [y3,Fs,bits]=wavread('niba.wav');
+[y1,Fs1,bits]=wavread('shengxia.wav');
+[y2,Fs2,bits]=wavread('media/gao.wav');
+%[y2,Fs2,bits]=wavread('media/nv.wav');
+%[y3,Fs3,bits]=wavread('huiyin.wav');
+
 originSource1 = y1;
 y1 = y1(:,1);
 y2 = y2(:,1);
@@ -24,9 +29,10 @@ y2 = reshape(y2,1,row*col);
 length3 = row * col;
 y3 = reshape(y3,1,row*col);
 
-y1 = y1(1,1:45000);
-y2 = y2(1,1:45000);
-y3 = y3(1,1:45000);
+N = 100000;  % 原数据去的点数
+y1 = y1(1,1:N);
+y2 = y2(1,1:N);
+y3 = y3(1,1:N);
 
 y1fft = fft(y1);
 y2fft = fft(y2);
