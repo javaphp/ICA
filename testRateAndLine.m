@@ -1,5 +1,5 @@
 clc;clear all;close all;
-%% 采用比率矩阵聚类的欠定盲源分离
+%% 采用比率矩阵聚类的欠定盲源分离,把数据进行分组，大于阈值的组保留。另外，把数据分组，进行直线拟合，不在直线附近的使用直线的点代替
 atanGate = 0; % 观测信号相除后的门限值，未定
 areaCount = 200; %观测向量相除最大值与最小值的子区间数
 areaNum = 150; %观测向量相除每个区间数量的最小阈值
@@ -143,6 +143,10 @@ ai2 = abs(A(1,2)/A(2,2));
 ai3 = abs(A(1,3)/A(2,3));
 
 final1 = zeros(1,45000);final2 = zeros(1,45000);final3 = zeros(1,45000);
+lineReal11 = zeros(1,45000);lineReal12 = zeros(1,45000);lineReal13 = zeros(1,45000);
+lineReal21 = zeros(1,45000);lineReal22 = zeros(1,45000);lineReal23 = zeros(1,45000);
+lineImag11 = zeros(1,45000);lineImag12 = zeros(1,45000);lineImag13 = zeros(1,45000);
+lineImag21 = zeros(1,45000);lineImag22 = zeros(1,45000);lineImag23 = zeros(1,45000);
 
 for j=1:sLength
     kt = abs(Sreal1(1,j)/Sreal2(1,j));
@@ -159,20 +163,32 @@ for j=1:sLength
     if(Sreal2(1,j) ~= 0)
         if (kt1<kt2 && kt1<kt3)
             s1(1,j) = Sreal1(1,j)/A(1,1);
+            lineReal11(1,j) = x11Real(1,j);
+            lineReal21(1,j) = x21Real(1,j);
         elseif (kt2<kt1 && kt2<kt3) 
             s2(1,j) = Sreal1(1,j)/A(1,2);
+            lineReal12(1,j) = x11Real(1,j);
+            lineReal22(1,j) = x21Real(1,j);
         elseif (kt3<kt1 && kt3<kt2) 
             s3(1,j) = Sreal1(1,j)/A(1,3);
+            lineReal13(1,j) = x11Real(1,j);
+            lineReal23(1,j) = x21Real(1,j);
         end
     end
     
     if(Simag2(1,j) ~= 0)
         if (kt1Imag<kt2Imag && kt1Imag<kt3Imag)
             s1Imag(1,j) = Simag1(1,j)/A(1,1);
+            lineImag11(1,j) = Simag1(1,j);
+            lineImag21(1,j) = Simag2(1,j);
         elseif (kt2Imag<kt1Imag && kt2Imag<kt3Imag) 
             s2Imag(1,j) = Simag1(1,j)/A(1,2);
+            lineImag12(1,j) = Simag1(1,j);
+            lineImag22(1,j) = Simag2(1,j);
         elseif (kt3Imag<kt1Imag && kt3Imag<kt2Imag) 
             s3Imag(1,j) = Simag1(1,j)/A(1,3);
+            lineImag13(1,j) = Simag1(1,j);
+            lineImag23(1,j) = Simag2(1,j);
         end
     end
     
@@ -194,6 +210,28 @@ subplot(313),plot(y3);title('原信号s3');
 figure,subplot(311),plot(real(ss1)),title('不填充恢复信号');
 subplot(312),plot(real(ss2)),
 subplot(313),plot(real(ss3)),
+
+%% 拟合三条直线
+p=polyfit(lineReal11, lineReal21,1);
+% 显示拟合前后直线，其中方框为拟合前数据，直线为拟合后的直线
+yy=polyval(p,lineReal11);
+figure,subplot(311);plot(lineReal11, lineReal21,'s',lineReal11,yy);title('拟合的直线30')
+%拟合的直线方程
+poly2sym(p,'x')
+
+p=polyfit(lineReal12, lineReal22,1);
+% 显示拟合前后直线，其中方框为拟合前数据，直线为拟合后的直线
+yy=polyval(p,lineReal12);
+subplot(312);plot(lineReal12, lineReal22,'s',lineReal12,yy);title('拟合的直线80')
+%拟合的直线方程
+poly2sym(p,'x')
+p=polyfit(lineReal13, lineReal23,1);
+% 显示拟合前后直线，其中方框为拟合前数据，直线为拟合后的直线
+yy=polyval(p,lineReal13);
+subplot(313);plot(lineReal13, lineReal23,'s',lineReal13,yy);title('拟合的直线135')
+%拟合的直线方程
+poly2sym(p,'x')
+
 
 
             
