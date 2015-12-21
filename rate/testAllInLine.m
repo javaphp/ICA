@@ -1,5 +1,5 @@
 clc;clear all;close all;
-%% 采用比率矩阵聚类的欠定盲源分离,把数据进行分组，大于阈值的组保留。另外，把数据分组，进行直线拟合，不在直线附近的使用直线的点代替
+%% 采用比率矩阵聚类的欠定盲源分离,把数据进行分组，大于阈值的组保留。另外，把数据分组，进行直线拟合，所有的点重新用直线的点来做估计
 atanGate = 0; % 观测信号相除后的门限值，未定
 areaCount = 200; %观测向量相除最大值与最小值的子区间数
 areaNum = 50; %观测向量相除每个区间数量的最小阈值
@@ -14,7 +14,7 @@ w1=window;
 [y3,Fs,bits]=wavread('yanhua.wav');
 %[y3,Fs,bits]=wavread('huiyin.wav');
 [y2,Fs,bits]=wavread('niba.wav');
-originSource1 = y1;
+
 y1 = y1(:,1);
 y2 = y2(:,1);
 y3 = y3(:,1);
@@ -33,6 +33,9 @@ N=50000;
 y1 = y1(1,1:N);
 y2 = y2(1,1:N);
 y3 = y3(1,1:N);
+originSource1 = y1;
+originSource2 = y2;
+originSource3 = y3;
 
 x11 = cos(pi/6)*y1 + cos(4*pi/9)*y2 + cos(3*pi/4)*y3;
 x21 = sin(pi/6)*y1 + sin(4*pi/9)*y2 + sin(3*pi/4)*y3;
@@ -143,8 +146,8 @@ ai2 = abs(A(1,2)/A(2,2));
 ai3 = abs(A(1,3)/A(2,3));
 
 signAi1 = A(1,1)/A(2,1);
-signAi2 = A(1,2)/A(2,1);
-signAi3 = A(1,3)/A(2,1);
+signAi2 = A(1,2)/A(2,2);
+signAi3 = A(1,3)/A(2,3);
 
 final1 = zeros(1,N);final2 = zeros(1,N);final3 = zeros(1,N);
 lineReal11 = zeros(1,N);lineReal12 = zeros(1,N);lineReal13 = zeros(1,N);
@@ -168,15 +171,15 @@ for j=1:sLength
     kt3Imag = abs(ktImag-ai3);
     
     if(Sreal2(1,j) ~= 0)
-        if (kt1<kt2 && kt1<kt3 && signReal/)
+        if (kt1<kt2 && kt1<kt3 && signReal/signAi1>0)
             s1(1,j) = Sreal1(1,j)/A(1,1);
             lineReal11(1,j) = x11Real(1,j);
             lineReal21(1,j) = x21Real(1,j);
-        elseif (kt2<kt1 && kt2<kt3) 
+        elseif (kt2<kt1 && kt2<kt3 && signReal/signAi2>0) 
             s2(1,j) = Sreal1(1,j)/A(1,2);
             lineReal12(1,j) = x11Real(1,j);
             lineReal22(1,j) = x21Real(1,j);
-        elseif (kt3<kt1 && kt3<kt2 && (Sreal1(1,j)/Sreal2(1,j))<0)   % TODO
+        elseif (kt3<kt1 && kt3<kt2 && signReal/signAi3>0)  
             s3(1,j) = Sreal1(1,j)/A(1,3);
             lineReal13(1,j) = x11Real(1,j);
             lineReal23(1,j) = x21Real(1,j);
@@ -184,15 +187,15 @@ for j=1:sLength
     end
     
     if(Simag2(1,j) ~= 0)
-        if (kt1Imag<kt2Imag && kt1Imag<kt3Imag)
+        if (kt1Imag<kt2Imag && kt1Imag<kt3Imag && signImag/signAi1>0)
             s1Imag(1,j) = Simag1(1,j)/A(1,1);
             lineImag11(1,j) = Simag1(1,j);
             lineImag21(1,j) = Simag2(1,j);
-        elseif (kt2Imag<kt1Imag && kt2Imag<kt3Imag) 
+        elseif (kt2Imag<kt1Imag && kt2Imag<kt3Imag && signImag/signAi2>0) 
             s2Imag(1,j) = Simag1(1,j)/A(1,2);
             lineImag12(1,j) = Simag1(1,j);
             lineImag22(1,j) = Simag2(1,j);
-        elseif (kt3Imag<kt1Imag && kt3Imag<kt2Imag && (Simag1(1,j)/Simag2(1,j))<0) 
+        elseif (kt3Imag<kt1Imag && kt3Imag<kt2Imag && signImag/signAi3>0) 
             s3Imag(1,j) = Simag1(1,j)/A(1,3);
             lineImag13(1,j) = Simag1(1,j);
             lineImag23(1,j) = Simag2(1,j);
@@ -212,6 +215,21 @@ ss3 = ifft(final3);
 figure,subplot(311),plot(y1);title('原信号s1');
 subplot(312),plot(y2);title('原信号s2');
 subplot(313),plot(y3);title('原信号s3');
+
+originSquare = 0;
+minusSquare = 0;
+%信干比
+for k = 1:N
+    originSquare = originSquare + originSource1(1,k)^2;
+    originSquare = originSquare + originSource2(1,k)^2;
+    originSquare = originSquare + originSource3(1,k)^2;
+    minusSquare = minusSquare + (real(ss1(1,k))-originSource1(1,k))^2;
+    minusSquare = minusSquare + (real(ss2(1,k))-originSource2(1,k))^2;
+    minusSquare = minusSquare + (real(ss3(1,k))-originSource3(1,k))^2;
+end
+originSquare = originSquare/3;
+minusSquare = minusSquare/3;
+SIR_before = originSquare/minusSquare;
 
 %% 实部和虚部fft图像
 figure,subplot(311),plot(real(ss1)),title('不填充恢复信号');
@@ -277,51 +295,13 @@ a3 = - (4240264807956945/4503599627370496); b3 = - 793710701151507/2882303761517
 distanceGate = 10; %点与直线“距离”阈值
 largeDistanceCount = 0;
 for j=1:N
-    if(lineReal11(1,j) ~= 0 && lineReal21(1,j) ~= 0)
-        distance1(1,j) = abs(abs(a1*lineReal11(1,j) + b1) - abs(lineReal21(1,j)));
-        if(distance1(1,j)>distanceGate)
-            largeDistanceCount = largeDistanceCount + 1;
-            lineReal11(1,j) = (lineReal21(1,j) - b1)/a1;
-        end
-    end
+    lineReal11(1,j) = (lineReal21(1,j) - b1)/a1;
+    lineReal12(1,j) = (lineReal22(1,j) - b2)/a2;
+    lineReal13(1,j) = (lineReal23(1,j) - b3)/a3;
+    lineImag11(1,j) = (lineImag21(1,j) - b1)/a1;
+    lineImag12(1,j) = (lineImag22(1,j) - b2)/a2;
+    lineImag13(1,j) = (lineImag23(1,j) - b3)/a3;
     
-    if(lineReal12(1,j) ~= 0 && lineReal22(1,j) ~= 0)
-        distance2(1,j) = abs(abs(a2*lineReal12(1,j) + b2) - abs(lineReal22(1,j)));
-        if(distance2(1,j)>distanceGate)
-            largeDistanceCount = largeDistanceCount + 1;
-            lineReal12(1,j) = (lineReal22(1,j) - b2)/a2;
-        end
-    end
-    
-    if(lineReal13(1,j) ~= 0 && lineReal23(1,j) ~= 0)
-        distance3(1,j) = abs(abs(a3*lineReal13(1,j) + b3) - abs(lineReal23(1,j)));
-        if(distance3(1,j)>distanceGate)
-            largeDistanceCount = largeDistanceCount + 1;
-            lineReal13(1,j) = (lineReal23(1,j) - b3)/a3;
-        end
-    end
-    
-     if(lineImag11(1,j) ~= 0 && lineImag21(1,j) ~= 0)
-        distanceImag1(1,j) = abs(abs(a1*lineImag11(1,j) + b1) - abs(lineImag21(1,j)));
-        if(distanceImag1(1,j)>distanceGate)
-            largeDistanceCount = largeDistanceCount + 1;
-            lineImag11(1,j) = (lineImag21(1,j) - b1)/a1;
-        end
-     end
-    if(lineImag12(1,j) ~= 0 && lineImag22(1,j) ~= 0)
-        distanceImag2(1,j) = abs(abs(a2*lineImag12(1,j) + b2) - abs(lineImag22(1,j)));
-        if(distanceImag2(1,j)>distanceGate)
-            largeDistanceCount = largeDistanceCount + 1;
-            lineImag12(1,j) = (lineImag22(1,j) - b2)/a2;
-        end
-    end
-    if(lineImag13(1,j) ~= 0 && lineImag23(1,j) ~= 0)
-        distanceImag3(1,j) = abs(abs(a3*lineImag13(1,j) + b3) - abs(lineImag23(1,j)));
-        if(distanceImag3(1,j)>distanceGate)
-            largeDistanceCount = largeDistanceCount + 1;
-            lineImag13(1,j) = (lineImag23(1,j) - b3)/a3;
-        end
-    end
 end
 
 %% 修复信号后重新估计
@@ -345,6 +325,22 @@ recover3 = ifft(signal3);
 figure,subplot(311),plot(real(recover1));title('修正后恢复');
 subplot(312),plot(real(recover2));
 subplot(313),plot(real(recover3));
+
+%信干比
+originSquare = 0;
+minusSquare = 0;
+
+for k = 1:N
+    originSquare = originSquare + originSource1(1,k)^2;
+    originSquare = originSquare + originSource2(1,k)^2;
+    originSquare = originSquare + originSource3(1,k)^2;
+    minusSquare = minusSquare + (real(recover1(1,k))-originSource1(1,k))^2;
+    minusSquare = minusSquare + (real(recover2(1,k))-originSource2(1,k))^2;
+    minusSquare = minusSquare + (real(recover3(1,k))-originSource3(1,k))^2;
+end
+originSquare = originSquare/3;
+minusSquare = minusSquare/3;
+SIR_after = originSquare/minusSquare;
             
 
 

@@ -8,12 +8,12 @@ n1=40;
 window=boxcar(n1);
 w1=window;
 
-[y1,Fs,bits]=wavread('shengxia.wav');
+[y1,Fs,bits]=wavread('./shengxia.wav');
 %[y2,Fs2,bits]=wavread('media/gao.wav');
 %[y3,Fs,bits]=wavread('media/nv.wav');
-[y3,Fs,bits]=wavread('yanhua.wav');
+[y3,Fs,bits]=wavread('./yanhua.wav');
 %[y3,Fs,bits]=wavread('huiyin.wav');
-[y2,Fs,bits]=wavread('niba.wav');
+[y2,Fs,bits]=wavread('./niba.wav');
 originSource1 = y1;
 y1 = y1(:,1);
 y2 = y2(:,1);
@@ -142,10 +142,6 @@ ai1 = abs(A(1,1)/A(2,1));
 ai2 = abs(A(1,2)/A(2,2));
 ai3 = abs(A(1,3)/A(2,3));
 
-signAi1 = A(1,1)/A(2,1);
-signAi2 = A(1,2)/A(2,1);
-signAi3 = A(1,3)/A(2,1);
-
 final1 = zeros(1,N);final2 = zeros(1,N);final3 = zeros(1,N);
 lineReal11 = zeros(1,N);lineReal12 = zeros(1,N);lineReal13 = zeros(1,N);
 lineReal21 = zeros(1,N);lineReal22 = zeros(1,N);lineReal23 = zeros(1,N);
@@ -156,9 +152,6 @@ for j=1:sLength
     kt = abs(Sreal1(1,j)/Sreal2(1,j));
     ktImag = abs(Simag1(1,j)/Simag2(1,j));
     
-    signReal = Sreal1(1,j)/Sreal2(1,j);
-    signImag = Simag1(1,j)/Simag2(1,j);
-    
     kt1 = abs(kt-ai1);
     kt2 = abs(kt-ai2);
     kt3 = abs(kt-ai3);
@@ -168,7 +161,7 @@ for j=1:sLength
     kt3Imag = abs(ktImag-ai3);
     
     if(Sreal2(1,j) ~= 0)
-        if (kt1<kt2 && kt1<kt3 && signReal/)
+        if (kt1<kt2 && kt1<kt3)
             s1(1,j) = Sreal1(1,j)/A(1,1);
             lineReal11(1,j) = x11Real(1,j);
             lineReal21(1,j) = x21Real(1,j);
@@ -192,7 +185,7 @@ for j=1:sLength
             s2Imag(1,j) = Simag1(1,j)/A(1,2);
             lineImag12(1,j) = Simag1(1,j);
             lineImag22(1,j) = Simag2(1,j);
-        elseif (kt3Imag<kt1Imag && kt3Imag<kt2Imag && (Simag1(1,j)/Simag2(1,j))<0) 
+        elseif (kt3Imag<kt1Imag && kt3Imag<kt2Imag) 
             s3Imag(1,j) = Simag1(1,j)/A(1,3);
             lineImag13(1,j) = Simag1(1,j);
             lineImag23(1,j) = Simag2(1,j);
@@ -217,7 +210,6 @@ subplot(313),plot(y3);title('原信号s3');
 figure,subplot(311),plot(real(ss1)),title('不填充恢复信号');
 subplot(312),plot(real(ss2)),
 subplot(313),plot(real(ss3)),
-
 
 %% 拟合三条直线
     %x=[1,1.5,2,2.5,3];y=[0.9,1.7,2.2,2.6,3];  
@@ -250,7 +242,7 @@ function3 = poly2sym(p,'x')
 p=polyfit(lineImag11, lineImag21,1);
 % 显示拟合前后直线，其中方框为拟合前数据，直线为拟合后的直线
 yy=polyval(p,lineImag11);
-figure,subplot(311);plot(lineImag11, lineImag21,'s',lineImag11,yy);title('拟合的直线虚部30')
+subplot(311);plot(lineImag11, lineImag21,'s',lineImag11,yy);title('拟合的直线虚部30')
 %拟合的直线方程
 functionImag1 = poly2sym(p,'x')
 
@@ -267,88 +259,3 @@ yy=polyval(p,lineImag13);
 subplot(313);plot(lineImag13, lineImag23,'s',lineImag13,yy);title('拟合的直线135')
 %拟合的直线方程
 functionImag3 = poly2sym(p,'x')
-
-%% 筛选离拟合直线太远的点,筛选的点置为0
-%TODO ？？？以后要换为直线上的点
-a1=4740677986623709/9007199254740992; b1 = 6561648807593965/288230376151711744;
-a2 = 2559747240020583/562949953421312; b2 = 2410539232636079/18014398509481984;
-a3 = - (4240264807956945/4503599627370496); b3 = - 793710701151507/288230376151711744;
-
-distanceGate = 10; %点与直线“距离”阈值
-largeDistanceCount = 0;
-for j=1:N
-    if(lineReal11(1,j) ~= 0 && lineReal21(1,j) ~= 0)
-        distance1(1,j) = abs(abs(a1*lineReal11(1,j) + b1) - abs(lineReal21(1,j)));
-        if(distance1(1,j)>distanceGate)
-            largeDistanceCount = largeDistanceCount + 1;
-            lineReal11(1,j) = (lineReal21(1,j) - b1)/a1;
-        end
-    end
-    
-    if(lineReal12(1,j) ~= 0 && lineReal22(1,j) ~= 0)
-        distance2(1,j) = abs(abs(a2*lineReal12(1,j) + b2) - abs(lineReal22(1,j)));
-        if(distance2(1,j)>distanceGate)
-            largeDistanceCount = largeDistanceCount + 1;
-            lineReal12(1,j) = (lineReal22(1,j) - b2)/a2;
-        end
-    end
-    
-    if(lineReal13(1,j) ~= 0 && lineReal23(1,j) ~= 0)
-        distance3(1,j) = abs(abs(a3*lineReal13(1,j) + b3) - abs(lineReal23(1,j)));
-        if(distance3(1,j)>distanceGate)
-            largeDistanceCount = largeDistanceCount + 1;
-            lineReal13(1,j) = (lineReal23(1,j) - b3)/a3;
-        end
-    end
-    
-     if(lineImag11(1,j) ~= 0 && lineImag21(1,j) ~= 0)
-        distanceImag1(1,j) = abs(abs(a1*lineImag11(1,j) + b1) - abs(lineImag21(1,j)));
-        if(distanceImag1(1,j)>distanceGate)
-            largeDistanceCount = largeDistanceCount + 1;
-            lineImag11(1,j) = (lineImag21(1,j) - b1)/a1;
-        end
-     end
-    if(lineImag12(1,j) ~= 0 && lineImag22(1,j) ~= 0)
-        distanceImag2(1,j) = abs(abs(a2*lineImag12(1,j) + b2) - abs(lineImag22(1,j)));
-        if(distanceImag2(1,j)>distanceGate)
-            largeDistanceCount = largeDistanceCount + 1;
-            lineImag12(1,j) = (lineImag22(1,j) - b2)/a2;
-        end
-    end
-    if(lineImag13(1,j) ~= 0 && lineImag23(1,j) ~= 0)
-        distanceImag3(1,j) = abs(abs(a3*lineImag13(1,j) + b3) - abs(lineImag23(1,j)));
-        if(distanceImag3(1,j)>distanceGate)
-            largeDistanceCount = largeDistanceCount + 1;
-            lineImag13(1,j) = (lineImag23(1,j) - b3)/a3;
-        end
-    end
-end
-
-%% 修复信号后重新估计
-for j=1:N
-    signal1Real(1,j) = lineReal11(1,j)/A(1,1);
-    signal2Real(1,j) = lineReal12(1,j)/A(1,2);
-    signal3Real(1,j) = lineReal13(1,j)/A(1,3);
-    
-    signal1Imag(1,j) = lineImag11(1,j)/A(1,1);
-    signal2Imag(1,j) = lineImag12(1,j)/A(1,2);
-    signal3Imag(1,j) = lineImag13(1,j)/A(1,3);
-    
-    signal1(1,j) = signal1Real(1,j) + signal1Imag(1,j)*i;
-    signal2(1,j) = signal2Real(1,j) + signal2Imag(1,j)*i;
-    signal3(1,j) = signal3Real(1,j) + signal3Imag(1,j)*i;
-end
-
-recover1 = ifft(signal1);
-recover2 = ifft(signal2);
-recover3 = ifft(signal3);
-figure,subplot(311),plot(real(recover1));title('修正后恢复');
-subplot(312),plot(real(recover2));
-subplot(313),plot(real(recover3));
-            
-
-
-
-
-
-

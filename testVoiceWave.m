@@ -20,8 +20,8 @@ x2 = y2(1:51000);
 x3 = y3(1:51000);
 
 figure
-subplot(311)
-plot(y1);
+subplot(311);
+plot(y1);title('Í¼Ïñ1');
 subplot(312)
 plot(y2);
 subplot(313)
