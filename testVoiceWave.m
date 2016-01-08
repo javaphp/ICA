@@ -28,13 +28,18 @@ subplot(313)
 plot(y3);
 
 
-[y4,Fs,bits]=wavread('beyond.wav');
-[y5,Fs,bits]=wavread('fei.wav');
-[y6,Fs,bits]=wavread('liu.wav');
+[y4,Fs,bits]=wavread('./media/1.wav');
+[y5,Fs,bits]=wavread('./media/2.wav');
+[y6,Fs,bits]=wavread('./media/3.wav');
  
-[y7,Fs,bits]=wavread('wang.wav');
-[y8,Fs,bits]=wavread('4.wav');
+[y7,Fs,bits]=wavread('./media/ganlan.wav');
+[y8,Fs,bits]=wavread('./media/gao.wav');
 
+y4 = y4(:,1);
+y5 = y5(:,1);
+y6 = y6(:,1);
+y7 = y7(:,1);
+y8 = y8(:,1);
 
 figure
 subplot(311)

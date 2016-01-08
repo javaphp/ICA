@@ -1,0 +1,78 @@
+clc;clear all;close all;
+%% 测试最短路径法是否能找到顺时针和逆时针最近的基向量,已完成
+data1=[cos(pi/7) cos(pi/3) cos(5*pi/9) cos(4*pi/5)];
+data2=[sin(pi/7) sin(pi/3) sin(5*pi/9) sin(4*pi/5)];
+
+%% 估计原信号
+
+A = zeros(2,3); %待改进
+
+A=[cos(pi/6) cos(4*pi/9) cos(3*pi/4);sin(pi/6) sin(4*pi/9) sin(3*pi/4)];
+a1Angle=atan2(A(2,1),A(1,1));
+a2Angle=atan2(A(2,2),A(1,2));
+a3Angle=atan2(A(2,3),A(1,3));
+baseAngle=[a1Angle a2Angle a3Angle];
+baseAnglePositive=baseAngle;   %把角度转换为0,2*pi范围内,atan2的范围是-Pi到pi
+baseAngleNegative=baseAngle;   %把角度转换为-2*pi,0范围内,atan2的范围是-Pi到pi
+for j=1:3
+    if(baseAngle(1,j)<0)
+        baseAnglePositive(1,j) = 2*pi + baseAngle(1,j);
+    end
+end
+baseCopy = baseAnglePositive;
+
+jk=1;km=1;
+for j=1:4
+    angles(1,j) = atan2(data2(1,j),data1(1,j));
+    angles1=angles(1,j);   %逆时针
+    angles2=angles(1,j);   %顺时针
+    if(angles(1,j)<0) 
+        angles1 = 2*pi+angles(1,j);   %把该点的角度转换为0,2*pi
+    elseif(angles(1,j)>0)
+        angles2 = angles(1,j) - 2*pi;     %把该点的角度转换为-2*pi,0
+    end
+    
+    for k=1:3
+        deltaAngle1(1,k)=baseAnglePositive(1,k)-angles1;  %逆时针最靠近的向量
+        deltaAngle2(1,k)= angles1 - baseAnglePositive(1,k);  %顺时针最靠近的向量
+    end
+    
+    %找出基向量
+    baseAnglePositive(4) = angles1;
+    baseAnglePositive
+    sorted_angle = sort(baseAnglePositive);
+    index=0;
+     for n=1:4     %b-1
+        if(sorted_angle(n) == angles1)
+            index = n;
+            break;
+        end
+     end
+    if(index==1)
+        index1=4;   %要判断的这个角度是最小的
+        index2 = 2;
+    elseif(index==4)
+        index1 = 1;
+        index2 = 3;   %要判断的这个角度是最大的
+    else
+        index1 = index -1;
+        index2 = index + 1;
+    end
+    disp('旁边的两个角度是：')
+    num1 = sorted_angle(index1)
+    num2 = sorted_angle(index2)
+    for p=1:3
+        if(baseCopy(p) == num1)
+            indexJ(1,j) = p
+        elseif(baseCopy(p) == num2)
+            indexK(1,j) = p
+        end
+    end
+    jk = jk+1;
+    km = km+1;
+    
+end
+
+
+
+
