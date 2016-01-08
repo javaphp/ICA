@@ -1,5 +1,5 @@
 clc;clear all;close all;
-%% 采用最短路径法估计信号,使用逆矩阵求解而不是解方程组
+%% 采用最短路径法估计信号,使用逆矩阵求解而不是解方程组,成功,信干比公式采用巩俊的论文2.14
 atanGate = 0; % 观测信号相除后的门限值，未定
 areaCount = 200; %观测向量相除最大值与最小值的子区间数
 areaNum = 50; %观测向量相除每个区间数量的最小阈值
@@ -30,10 +30,14 @@ length3 = row * col;
 y3 = reshape(y3,1,row*col);
 
 M = 10000;
-N=30000;
-y1 = y1(1,M:N+M);
-y2 = y2(1,M:N+M);
-y3 = y3(1,M:N+M);
+N=50000;
+% y1 = y1(1,M+1:N+M);
+% y2 = y2(1,M+1:N+M);
+% y3 = y3(1,M+1:N+M);
+y1 = y1(1,1:N);
+y2 = y2(1,1:N);
+y3 = y3(1,1:N);
+
 originSource1 = y1;
 originSource2 = y2;
 originSource3 = y3;
@@ -62,14 +66,14 @@ a1Angle=atan2(A(2,1),A(1,1));
 a2Angle=atan2(A(2,2),A(1,2));
 a3Angle=atan2(A(2,3),A(1,3));
 baseAngle=[a1Angle a2Angle a3Angle];
-baseAnglePositive=baseAngle;   %把角度转换为0,2*pi范围内,atan2的范围是-Pi到pi
-baseAngleNegative=baseAngle;   %把角度转换为-2*pi,0范围内,atan2的范围是-Pi到pi
+
 for j=1:3
     if(baseAngle(1,j)<0)
         baseAngle(1,j) = baseAngle(1,j) + 2*pi;
     end
 end
 baseCopy = baseAngle;
+baseAnglePositive=baseAngle;   %把角度转换为0,2*pi范围内,atan2的范围是-Pi到pi
 
 Sreal1 = x11Real;
 Simag1 = x11Imag;
@@ -77,20 +81,6 @@ Sreal2 = x21Real;
 Simag2 = x21Imag;
 [row col] = size(Sreal1);
 sLength = row * col;
-s1 = zeros(1,sLength);
-s2 = zeros(1,sLength);
-s3 = zeros(1,sLength);
-s1Imag = zeros(1,sLength);
-s2Imag = zeros(1,sLength);
-s3Imag = zeros(1,sLength);
-
-ai1 = abs(A(1,1)/A(2,1));
-ai2 = abs(A(1,2)/A(2,2));
-ai3 = abs(A(1,3)/A(2,3));
-
-signAi1 = A(1,1)/A(2,1);
-signAi2 = A(1,2)/A(2,2);
-signAi3 = A(1,3)/A(2,3);
 
 final1 = zeros(1,N);final2 = zeros(1,N);final3 = zeros(1,N);
 real1 = zeros(1,N);real2 = zeros(1,N);real3 = zeros(1,N);
@@ -106,7 +96,6 @@ for j=1:N
     if(angles1<0)
         angles1 = angles1 + 2*pi;
     end
-    
     
     baseAnglePositive(4) = angles1;
     sorted_angle = sort(baseAnglePositive);
@@ -206,16 +195,8 @@ for j=1:N
     angles(1,j) = atan2(Simag2(1,j),Simag1(1,j));
     angles1=angles(1,j);   %逆时针
     %把该点的角度转换为0,2*pi
-    if(angles1>0)
-        if(Sreal1(1,j)<0)
-            angles1 = pi + angles1;
-        end
-    else
-        if(Sreal1(1,j)<0)
-            angles1 = pi + angles1;
-        else
-            angles1 = 2*pi + angles1;
-        end
+    if(angles1<0)
+        angles1 = angles1 + 2*pi;
     end
     
     baseAnglePositive(4) = angles1;
@@ -336,9 +317,9 @@ figure,subplot(311),plot(y1),title('原信号');
 subplot(312),plot(y2);
 subplot(313),plot(y3);
 
-figure,subplot(311),plot(real(final1)),axis([0 30000 -0.5 0.5]);title('恢复的信号');
-subplot(312),plot(real(final2));axis([0 30000 -0.2 0.2]);
-subplot(313),plot(real(final3));axis([0 30000 -0.2 0.2]);
+figure,subplot(311),plot(real(final1)),axis([0 N -0.5 0.5]);title('恢复的信号');
+subplot(312),plot(real(final2));axis([0 N -0.2 0.2]);
+subplot(313),plot(real(final3));axis([0 N -0.2 0.2]);
 
 % figure,subplot(311),plot(real(final1));title('恢复的信号');
 % subplot(312),plot(real(final2));
@@ -352,13 +333,17 @@ for k = 1:N
     originSquare = originSquare + originSource1(1,k)^2;
     originSquare = originSquare + originSource2(1,k)^2;
     originSquare = originSquare + originSource3(1,k)^2;
-    minusSquare = minusSquare + (real(recover1(1,k))-originSource1(1,k))^2;
-    minusSquare = minusSquare + (real(recover2(1,k))-originSource2(1,k))^2;
-    minusSquare = minusSquare + (real(recover3(1,k))-originSource3(1,k))^2;
+    minusSquare = minusSquare + (real(final1(1,k))-originSource1(1,k))^2;
+    minusSquare = minusSquare + (real(final2(1,k))-originSource2(1,k))^2;
+    minusSquare = minusSquare + (real(final3(1,k))-originSource3(1,k))^2;
 end
 originSquare = originSquare/3;
 minusSquare = minusSquare/3;
 SIR_before = originSquare/minusSquare
+
+%% 进行直线拟合
+figure,plot(real1);hold on;
+plot(real2);
 
 
 

@@ -341,6 +341,10 @@ originSquare = originSquare/3;
 minusSquare = minusSquare/3;
 SIR_before = originSquare/minusSquare
 
+%% 进行直线拟合
+observeSignal11=A(1,1)*real1;
+observeSignal21=A(2,1)*real1;
+
 
 
 
