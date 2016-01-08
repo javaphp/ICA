@@ -333,9 +333,9 @@ for k = 1:N
     originSquare = originSquare + originSource1(1,k)^2;
     originSquare = originSquare + originSource2(1,k)^2;
     originSquare = originSquare + originSource3(1,k)^2;
-    minusSquare = minusSquare + (real(recover1(1,k))-originSource1(1,k))^2;
-    minusSquare = minusSquare + (real(recover2(1,k))-originSource2(1,k))^2;
-    minusSquare = minusSquare + (real(recover3(1,k))-originSource3(1,k))^2;
+    minusSquare = minusSquare + (real(final1(1,k))-originSource1(1,k))^2;
+    minusSquare = minusSquare + (real(final2(1,k))-originSource2(1,k))^2;
+    minusSquare = minusSquare + (real(final3(1,k))-originSource3(1,k))^2;
 end
 originSquare = originSquare/3;
 minusSquare = minusSquare/3;
