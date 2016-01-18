@@ -10,10 +10,10 @@ w1=window;
 
 [y1,Fs,bits]=wavread('shengxia.wav');
 %[y2,Fs2,bits]=wavread('media/gao.wav');
-%[y3,Fs,bits]=wavread('media/nv.wav');
-[y3,Fs,bits]=wavread('yanhua.wav');
+[y3,Fs,bits]=wavread('media/nv.wav');
+[y2,Fs,bits]=wavread('yanhua.wav');
 %[y3,Fs,bits]=wavread('huiyin.wav');
-[y2,Fs,bits]=wavread('niba.wav');
+% [y2,Fs,bits]=wavread('niba.wav');
 
 y1 = y1(:,1);
 y2 = y2(:,1);
@@ -55,6 +55,7 @@ for j=1:x11Row
         atanImag(j,k) = atan(x21Imag(j,k)/x11Imag(j,k));
     end
 end
+
 realMin = min(atanReal(:));
 realMax = max(atanReal(:));
 imagMin = min(atanImag(:));
@@ -124,10 +125,7 @@ signal = [x11;x21];
 %signalImag = [x11Imag;x21Imag];
 
 A=[cos(pi/6) cos(4*pi/9) cos(3*pi/4);sin(pi/6) sin(4*pi/9) sin(3*pi/4)];
-% Sreal1 = real(x11);
-% Simag1 = imag(x11);
-% Sreal2 = real(x21);
-% Simag2 = imag(x21);
+
 Sreal1 = x11Real;
 Simag1 = x11Imag;
 Sreal2 = x21Real;
@@ -145,6 +143,10 @@ ai1 = abs(A(1,1)/A(2,1));
 ai2 = abs(A(1,2)/A(2,2));
 ai3 = abs(A(1,3)/A(2,3));
 
+slope1 = A(2,1)/A(1,1);   %斜率1
+slope2 = A(2,2)/A(1,2);   %斜率2
+slope3 = A(2,3)/A(1,3);   %斜率3
+
 signAi1 = A(1,1)/A(2,1);
 signAi2 = A(1,2)/A(2,2);
 signAi3 = A(1,3)/A(2,3);
@@ -156,50 +158,38 @@ lineImag11 = zeros(1,N);lineImag12 = zeros(1,N);lineImag13 = zeros(1,N);
 lineImag21 = zeros(1,N);lineImag22 = zeros(1,N);lineImag23 = zeros(1,N);
 
 for j=1:sLength
-    kt = abs(Sreal1(1,j)/Sreal2(1,j));
-    ktImag = abs(Simag1(1,j)/Simag2(1,j));
-    
-    signReal = Sreal1(1,j)/Sreal2(1,j);
-    signImag = Simag1(1,j)/Simag2(1,j);
-    
-    kt1 = abs(kt-ai1);
-    kt2 = abs(kt-ai2);
-    kt3 = abs(kt-ai3);
-    
-    kt1Imag = abs(ktImag-ai1);
-    kt2Imag = abs(ktImag-ai2);
-    kt3Imag = abs(ktImag-ai3);
-    
-    if(Sreal2(1,j) ~= 0)
-        if (kt1<kt2 && kt1<kt3 && signReal/signAi1>0)
-            s1(1,j) = Sreal1(1,j)/A(1,1);
-            lineReal11(1,j) = x11Real(1,j);
-            lineReal21(1,j) = x21Real(1,j);
-        elseif (kt2<kt1 && kt2<kt3 && signReal/signAi2>0) 
-            s2(1,j) = Sreal1(1,j)/A(1,2);
-            lineReal12(1,j) = x11Real(1,j);
-            lineReal22(1,j) = x21Real(1,j);
-        elseif (kt3<kt1 && kt3<kt2 && signReal/signAi3>0)  
-            s3(1,j) = Sreal1(1,j)/A(1,3);
-            lineReal13(1,j) = x11Real(1,j);
-            lineReal23(1,j) = x21Real(1,j);
-        end
+    distance1 = abs(slope1*x11Real(1,j) - x21Real(1,j))/sqrt(slope1^2 + 1);
+    distance2 = abs(slope2*x11Real(1,j) - x21Real(1,j))/sqrt(slope2^2 + 1);
+    distance3 = abs(slope3*x11Real(1,j) - x21Real(1,j))/sqrt(slope3^2 + 1);
+    if(distance1 < distance2 && distance1 < distance3)
+        s1(1,j) = x11Real(1,j)/A(1,1);
+        lineReal11(1,j) = x11Real(1,j);
+        lineReal21(1,j) = x21Real(1,j);
+    elseif(distance2 < distance1 && distance2 < distance3)
+        s2(1,j) = x11Real(1,j)/A(1,2);
+        lineReal12(1,j) = x11Real(1,j);
+        lineReal22(1,j) = x21Real(1,j);
+    elseif(distance3 < distance1 && distance3 < distance2)
+        s3(1,j) = x11Real(1,j)/A(1,3);
+        lineReal13(1,j) = x11Real(1,j);
+        lineReal23(1,j) = x21Real(1,j);
     end
     
-    if(Simag2(1,j) ~= 0)
-        if (kt1Imag<kt2Imag && kt1Imag<kt3Imag && signImag/signAi1>0)
-            s1Imag(1,j) = Simag1(1,j)/A(1,1);
-            lineImag11(1,j) = Simag1(1,j);
-            lineImag21(1,j) = Simag2(1,j);
-        elseif (kt2Imag<kt1Imag && kt2Imag<kt3Imag && signImag/signAi2>0) 
-            s2Imag(1,j) = Simag1(1,j)/A(1,2);
-            lineImag12(1,j) = Simag1(1,j);
-            lineImag22(1,j) = Simag2(1,j);
-        elseif (kt3Imag<kt1Imag && kt3Imag<kt2Imag && signImag/signAi3>0) 
-            s3Imag(1,j) = Simag1(1,j)/A(1,3);
-            lineImag13(1,j) = Simag1(1,j);
-            lineImag23(1,j) = Simag2(1,j);
-        end
+    distance1 = abs(slope1*x11Imag(1,j) - x21Imag(1,j))/sqrt(slope1^2 + 1);
+    distance2 = abs(slope2*x11Imag(1,j) - x21Imag(1,j))/sqrt(slope2^2 + 1);
+    distance3 = abs(slope3*x11Imag(1,j) - x21Imag(1,j))/sqrt(slope3^2 + 1);
+    if(distance1 < distance2 && distance1 < distance3)
+        s1Imag(1,j) = x11Imag(1,j)/A(1,1);
+        lineImag11(1,j) = x11Imag(1,j);
+        lineImag21(1,j) = x21Imag(1,j);
+    elseif(distance2 < distance1 && distance2 < distance3)
+        s2Imag(1,j) = x11Imag(1,j)/A(1,2);
+        lineImag12(1,j) = x11Imag(1,j);
+        lineImag22(1,j) = x21Imag(1,j);
+    elseif(distance3 < distance1 && distance3 < distance2)
+        s3Imag(1,j) = x11Imag(1,j)/A(1,3);
+        lineImag13(1,j) = x11Imag(1,j);
+        lineImag23(1,j) = x21Imag(1,j);
     end
     
     final1(1,j) = s1(1,j) + s1Imag(1,j)*i;
@@ -229,59 +219,59 @@ for k = 1:N
 end
 originSquare = originSquare/3;
 minusSquare = minusSquare/3;
-SIR_before = originSquare/minusSquare;
+SIR_before = originSquare/minusSquare
 
 %% 实部和虚部fft图像
-figure,subplot(311),plot(real(ss1)),title('不填充恢复信号');
+figure,subplot(311),plot(real(ss1)),title('直接恢复的信号');
 subplot(312),plot(real(ss2)),
 subplot(313),plot(real(ss3)),
 
 
 %% 拟合三条直线
-    
-p=polyfit(lineReal11, lineReal21,1);
-显示拟合前后直线，其中方框为拟合前数据，直线为拟合后的直线
-yy=polyval(p,lineReal11);
-figure,subplot(311);plot(lineReal11, lineReal21,'s',lineReal11,yy);title('拟合的直线30')
+equation1=polyfit(lineReal11, lineReal21,1);
+% 显示拟合前后直线，其中方框为拟合前数据，直线为拟合后的直线
+value1=polyval(equation1,lineReal11);
+figure,subplot(311);plot(lineReal11, lineReal21,'s',lineReal11,value1);title('拟合的直线30')
 %拟合的直线方程
-function1 = poly2sym(p,'x')
+function1 = poly2sym(equation1,'x')
 
-p=polyfit(lineReal12, lineReal22,1);
+equation2=polyfit(lineReal12, lineReal22,1);
 % 显示拟合前后直线，其中方框为拟合前数据，直线为拟合后的直线
-yy=polyval(p,lineReal12);
-subplot(312);plot(lineReal12, lineReal22,'s',lineReal12,yy);title('拟合的直线80')
+value2=polyval(equation2,lineReal12);
+subplot(312);plot(lineReal12, lineReal22,'s',lineReal12,value2);title('拟合的直线80')
 %拟合的直线方程
-function2 = poly2sym(p,'x')
-p=polyfit(lineReal13, lineReal23,1);
+function2 = poly2sym(equation2,'x')
+
+equation3=polyfit(lineReal13, lineReal23,1);
 % 显示拟合前后直线，其中方框为拟合前数据，直线为拟合后的直线
-yy=polyval(p,lineReal13);
-subplot(313);plot(lineReal13, lineReal23,'s',lineReal13,yy);title('拟合的直线135')
+value3=polyval(equation3,lineReal13);
+subplot(313);plot(lineReal13, lineReal23,'s',lineReal13,value3);title('拟合的直线135')
 %拟合的直线方程
-function3 = poly2sym(p,'x')
+function3 = poly2sym(equation3,'x')
 
 %% 虚部的拟合直线
-p=polyfit(lineImag11, lineImag21,1);
+equationImag1=polyfit(lineImag11, lineImag21,1);
 % 显示拟合前后直线，其中方框为拟合前数据，直线为拟合后的直线
-yy=polyval(p,lineImag11);
-figure,subplot(311);plot(lineImag11, lineImag21,'s',lineImag11,yy);title('拟合的直线虚部30')
+valueImag1=polyval(equationImag1,lineImag11);
+figure,subplot(311);plot(lineImag11, lineImag21,'s',lineImag11,valueImag1);title('拟合的直线虚部30')
 %拟合的直线方程
-functionImag1 = poly2sym(p,'x')
+functionImag1 = poly2sym(equationImag1,'x')
 
-p=polyfit(lineImag12, lineImag22,1);
+equationImag2=polyfit(lineImag12, lineImag22,1);
 % 显示拟合前后直线，其中方框为拟合前数据，直线为拟合后的直线
-yy=polyval(p,lineImag12);
-subplot(312);plot(lineImag12, lineImag22,'s',lineImag12,yy);title('拟合的直线虚部80')
+valueImag2=polyval(equationImag2,lineImag12);
+subplot(312);plot(lineImag12, lineImag22,'s',lineImag12,valueImag2);title('拟合的直线虚部80')
 %拟合的直线方程
-functionImag2 = poly2sym(p,'x')
+functionImag2 = poly2sym(equationImag2,'x')
 
-p=polyfit(lineReal13, lineReal23,1);
+equationImag3=polyfit(lineReal13, lineReal23,1);
 % 显示拟合前后直线，其中方框为拟合前数据，直线为拟合后的直线
-yy=polyval(p,lineImag13);
-subplot(313);plot(lineImag13, lineImag23,'s',lineImag13,yy);title('拟合的直线135')
+valueImag3=polyval(equationImag3,lineImag13);
+subplot(313);plot(lineImag13, lineImag23,'s',lineImag13,valueImag3);title('拟合的直线135')
 %拟合的直线方程
-functionImag3 = poly2sym(p,'x')
+functionImag3 = poly2sym(equationImag3,'x')
 
-%% 筛选离拟合直线太远的点,筛选的点置为0
+%% 重新估计
 %求得拟合直线的系数
 a1 = polyval(equation1,2) - polyval(equation1,1);b1 = polyval(equation1,0);
 a2 = polyval(equation2,2) - polyval(equation2,1);b2 = polyval(equation2,0);
@@ -291,8 +281,6 @@ a1Imag = polyval(equationImag1,2) - polyval(equationImag1,1);b1Imag = polyval(eq
 a2Imag = polyval(equationImag2,2) - polyval(equationImag2,1);b2Imag = polyval(equationImag2,0);
 a3Imag = polyval(equationImag3,2) - polyval(equationImag3,1);b3Imag = polyval(equationImag3,0);
 
-distanceGate = 10; %点与直线“距离”阈值
-largeDistanceCount = 0;
 for j=1:N
     lineReal11(1,j) = (lineReal21(1,j) - b1)/a1;
     lineReal12(1,j) = (lineReal22(1,j) - b2)/a2;
@@ -340,7 +328,7 @@ end
 originSquare = originSquare/3;
 minusSquare = minusSquare/3;
 SIR_after = originSquare/minusSquare
-            
+
 
 
 

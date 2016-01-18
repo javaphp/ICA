@@ -238,59 +238,58 @@ subplot(313),plot(real(ss3)),
 
 
 %% 拟合三条直线
-    %x=[1,1.5,2,2.5,3];y=[0.9,1.7,2.2,2.6,3];  
-    p=polyfit(lineReal11, lineReal21,1);  
-    x1=linspace(min(lineReal11),max(lineReal11));  
-    y1=polyval(p,x1);  
-    figure,subplot(311);plot(lineReal11,lineReal21,'*',x1,y1);  
     
-%p=polyfit(lineReal11, lineReal21,1);
+equation1=polyfit(lineReal11, lineReal21,1);
 % 显示拟合前后直线，其中方框为拟合前数据，直线为拟合后的直线
-%yy=polyval(p,lineReal11);
-%figure,subplot(311);plot(lineReal11, lineReal21,'s',lineReal11,yy);title('拟合的直线30')
+value1=polyval(equation1,lineReal11);
+figure,subplot(311);plot(lineReal11, lineReal21,'s',lineReal11,value1);title('拟合的直线30')
 %拟合的直线方程
-function1 = poly2sym(p,'x')
+function1 = poly2sym(equation1,'x')
 
-p=polyfit(lineReal12, lineReal22,1);
+equation2=polyfit(lineReal12, lineReal22,1);
 % 显示拟合前后直线，其中方框为拟合前数据，直线为拟合后的直线
-yy=polyval(p,lineReal12);
-subplot(312);plot(lineReal12, lineReal22,'s',lineReal12,yy);title('拟合的直线80')
+value2=polyval(equation2,lineReal12);
+subplot(312);plot(lineReal12, lineReal22,'s',lineReal12,value2);title('拟合的直线80')
 %拟合的直线方程
-function2 = poly2sym(p,'x')
-p=polyfit(lineReal13, lineReal23,1);
+function2 = poly2sym(equation2,'x')
+equation3=polyfit(lineReal13, lineReal23,1);
 % 显示拟合前后直线，其中方框为拟合前数据，直线为拟合后的直线
-yy=polyval(p,lineReal13);
-subplot(313);plot(lineReal13, lineReal23,'s',lineReal13,yy);title('拟合的直线135')
+value3=polyval(equation3,lineReal13);
+subplot(313);plot(lineReal13, lineReal23,'s',lineReal13,value3);title('拟合的直线135')
 %拟合的直线方程
-function3 = poly2sym(p,'x')
+function3 = poly2sym(equation3,'x')
 
 %% 虚部的拟合直线
-p=polyfit(lineImag11, lineImag21,1);
+equationImag1=polyfit(lineImag11, lineImag21,1);
 % 显示拟合前后直线，其中方框为拟合前数据，直线为拟合后的直线
-yy=polyval(p,lineImag11);
-figure,subplot(311);plot(lineImag11, lineImag21,'s',lineImag11,yy);title('拟合的直线虚部30')
+value1Imag=polyval(equationImag1,lineImag11);
+figure,subplot(311);plot(lineImag11, lineImag21,'s',lineImag11,value1Imag);title('拟合的直线虚部30')
 %拟合的直线方程
-functionImag1 = poly2sym(p,'x')
+functionImag1 = poly2sym(equationImag1,'x')
 
-p=polyfit(lineImag12, lineImag22,1);
+equationImag2=polyfit(lineImag12, lineImag22,1);
 % 显示拟合前后直线，其中方框为拟合前数据，直线为拟合后的直线
-yy=polyval(p,lineImag12);
-subplot(312);plot(lineImag12, lineImag22,'s',lineImag12,yy);title('拟合的直线虚部80')
+value2Imag=polyval(equationImag2,lineImag12);
+subplot(312);plot(lineImag12, lineImag22,'s',lineImag12,value2Imag);title('拟合的直线虚部80')
 %拟合的直线方程
-functionImag2 = poly2sym(p,'x')
+functionImag2 = poly2sym(equationImag2,'x')
 
-p=polyfit(lineReal13, lineReal23,1);
+equationImag3=polyfit(lineReal13, lineReal23,1);
 % 显示拟合前后直线，其中方框为拟合前数据，直线为拟合后的直线
-yy=polyval(p,lineImag13);
-subplot(313);plot(lineImag13, lineImag23,'s',lineImag13,yy);title('拟合的直线135')
+value3Imag=polyval(equationImag3,lineImag13);
+subplot(313);plot(lineImag13, lineImag23,'s',lineImag13,value3Imag);title('拟合的直线135')
 %拟合的直线方程
-functionImag3 = poly2sym(p,'x')
+functionImag3 = poly2sym(equationImag3,'x')
 
 %% 筛选离拟合直线太远的点,筛选的点置为0
-%TODO ？？？以后要换为直线上的点
-a1=4740677986623709/9007199254740992; b1 = 6561648807593965/288230376151711744;
-a2 = 2559747240020583/562949953421312; b2 = 2410539232636079/18014398509481984;
-a3 = - (4240264807956945/4503599627370496); b3 = - 793710701151507/288230376151711744;
+%求得拟合直线的系数
+a1 = polyval(equation1,2) - polyval(equation1,1);b1 = polyval(equation1,0);
+a2 = polyval(equation2,2) - polyval(equation2,1);b2 = polyval(equation2,0);
+a3 = polyval(equation3,2) - polyval(equation3,1);b3 = polyval(equation3,0);
+
+a1Imag = polyval(equationImag1,2) - polyval(equationImag1,1);b1Imag = polyval(equationImag1,0);
+a2Imag = polyval(equationImag2,2) - polyval(equationImag2,1);b2Imag = polyval(equationImag2,0);
+a3Imag = polyval(equationImag3,2) - polyval(equationImag3,1);b3Imag = polyval(equationImag3,0);
 
 distanceGate = 10; %点与直线“距离”阈值
 largeDistanceCount = 0;
@@ -298,9 +297,9 @@ for j=1:N
     lineReal11(1,j) = (lineReal21(1,j) - b1)/a1;
     lineReal12(1,j) = (lineReal22(1,j) - b2)/a2;
     lineReal13(1,j) = (lineReal23(1,j) - b3)/a3;
-    lineImag11(1,j) = (lineImag21(1,j) - b1)/a1;
-    lineImag12(1,j) = (lineImag22(1,j) - b2)/a2;
-    lineImag13(1,j) = (lineImag23(1,j) - b3)/a3;
+    lineImag11(1,j) = (lineImag21(1,j) - b1Imag)/a1Imag;
+    lineImag12(1,j) = (lineImag22(1,j) - b2Imag)/a2Imag;
+    lineImag13(1,j) = (lineImag23(1,j) - b3Imag)/a3Imag;
     
 end
 
@@ -340,7 +339,7 @@ for k = 1:N
 end
 originSquare = originSquare/3;
 minusSquare = minusSquare/3;
-SIR_after = originSquare/minusSquare;
+SIR_after = originSquare/minusSquare
             
 
 

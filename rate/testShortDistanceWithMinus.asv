@@ -1,19 +1,15 @@
 clc;clear all;close all;
-%% 采用最短路径法估计信号,使用逆矩阵求解而不是解方程组,成功,信干比公式采用巩俊的论文2.14
+%% 采用最短路径法估计信号,最短路径的选取考虑向量负方向,信干比公式采用巩俊的论文2.14
 atanGate = 0; % 观测信号相除后的门限值，未定
 areaCount = 200; %观测向量相除最大值与最小值的子区间数
 areaNum = 50; %观测向量相除每个区间数量的最小阈值
 
-n1=40;
-window=boxcar(n1);
-w1=window;
-
 [y1,Fs,bits]=wavread('shengxia.wav');
 % [y2,Fs2,bits]=wavread('media/gao.wav');
-[y3,Fs,bits]=wavread('media/nv.wav');
-[y2,Fs,bits]=wavread('yanhua.wav');
-% [y3,Fs,bits]=wavread('huiyin.wav');
-% [y2,Fs,bits]=wavread('niba.wav');
+% [y3,Fs,bits]=wavread('media/nv.wav');
+% [y2,Fs,bits]=wavread('yanhua.wav');
+[y3,Fs,bits]=wavread('huiyin.wav');
+[y2,Fs,bits]=wavread('niba.wav');
 
 y1 = y1(:,1);
 y2 = y2(:,1);
@@ -107,11 +103,11 @@ for j=1:N
         end
     end
     if(index == 1)
-        index1 = 4; %顺时针
+        index1 = 3; %顺时针
         index2 = 2; %逆时针
     elseif(index == 4) 
         index1 = 3;
-        index2 = 1;
+        index2 = 2;
     else
         index1 = index - 1;
         index2 = index + 1;
@@ -311,13 +307,13 @@ figure,subplot(311),plot(y1),title('原信号');
 subplot(312),plot(y2);
 subplot(313),plot(y3);
 
-% figure,subplot(311),plot(real(final1)),axis([0 N -0.5 0.5]);title('恢复的信号');
-% subplot(312),plot(real(final2));axis([0 N -0.2 0.2]);
-% subplot(313),plot(real(final3));axis([0 N -0.2 0.2]);
+figure,subplot(311),plot(real(final1)),axis([0 N -0.5 0.5]);title('恢复的信号');
+subplot(312),plot(real(final2));axis([0 N -0.2 0.2]);
+subplot(313),plot(real(final3));axis([0 N -0.2 0.2]);
 
-figure,subplot(311),plot(real(final1));title('恢复的信号');
-subplot(312),plot(real(final2));
-subplot(313),plot(real(final3));
+% figure,subplot(311),plot(real(final1));title('恢复的信号');
+% subplot(312),plot(real(final2));
+% subplot(313),plot(real(final3));
 
 %% 信干比
 originSquare = 0;
